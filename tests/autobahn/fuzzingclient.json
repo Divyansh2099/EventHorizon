@@ -1,0 +1,12 @@
+{
+   "outdir": "./reports/clients",
+   "servers": [
+      {
+         "agent": "EventHorizon",
+         "url": "wss://127.0.0.1:8082/ws"
+      }
+   ],
+   "cases": ["*"],
+   "exclude-cases": [],
+   "exclude-agent-cases": {}
+}

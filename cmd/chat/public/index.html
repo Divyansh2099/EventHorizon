@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHorizon Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Ambient background glowing orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.5;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        .orb-1 {
+            width: 400px; height: 400px;
+            background: #4f46e5;
+            top: -100px; left: -100px;
+        }
+        .orb-2 {
+            width: 500px; height: 500px;
+            background: #ec4899;
+            bottom: -200px; right: -100px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.2); }
+        }
+
+        .chat-container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 800px;
+            height: 85vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444; /* red when disconnected */
+            transition: background 0.3s ease;
+            box-shadow: 0 0 10px #ef4444;
+        }
+        .status-dot.connected {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .chat-log {
+            flex-grow: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-log::-webkit-scrollbar { width: 6px; }
+        .chat-log::-webkit-scrollbar-track { background: transparent; }
+        .chat-log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        .message.self {
+            align-self: flex-end;
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-username {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            margin-left: 12px;
+        }
+        
+        .message.self .msg-username {
+            display: none;
+        }
+
+        .msg-bubble {
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px 20px 20px 4px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            backdrop-filter: blur(4px);
+        }
+
+        .message.self .msg-bubble {
+            background: linear-gradient(135deg, var(--primary), #ec4899);
+            border: none;
+            border-radius: 20px 20px 4px 20px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .input-area {
+            padding: 24px;
+            background: rgba(0,0,0,0.1);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 12px;
+        }
+
+        input {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3);
+        }
+
+        #username-inp { width: 120px; }
+        #message-inp { flex-grow: 1; }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), #ec4899);
+            border: none;
+            border-radius: 12px;
+            padding: 0 24px;
+            color: white;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="chat-container">
+        <div class="header">
+            <h1>EventHorizon Live</h1>
+            <div class="status">
+                <span id="status-text">Disconnected</span>
+                <div id="status-dot" class="status-dot"></div>
+            </div>
+        </div>
+
+        <div id="chat-log" class="chat-log">
+            <!-- Messages will appear here -->
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="username-inp" placeholder="Username" value="Guest" autocomplete="off">
+            <input type="text" id="message-inp" placeholder="Type a message..." autocomplete="off">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatLog = document.getElementById('chat-log');
+        const msgInp = document.getElementById('message-inp');
+        const userInp = document.getElementById('username-inp');
+        const sendBtn = document.getElementById('send-btn');
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.getElementById('status-dot');
+
+        let ws;
+
+        function connect() {
+            ws = new WebSocket("wss://127.0.0.1:8082/ws");
+
+            ws.onopen = () => {
+                statusText.textContent = "Connected";
+                statusDot.classList.add("connected");
+            };
+
+            ws.onclose = () => {
+                statusText.textContent = "Disconnected";
+                statusDot.classList.remove("connected");
+                setTimeout(connect, 3000); // auto reconnect
+            };
+
+            ws.onmessage = async (e) => {
+                let text = "";
+                if (e.data instanceof Blob) {
+                    text = await e.data.text();
+                } else {
+                    text = e.data;
+                }
+                
+                try {
+                    const data = JSON.parse(text);
+                    appendMessage(data.user, data.text, data.user === userInp.value.trim());
+                } catch(err) {
+                    console.error("Failed to parse msg:", text);
+                }
+            };
+        }
+
+        function appendMessage(user, text, isSelf) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isSelf ? 'self' : ''}`;
+            
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'msg-username';
+            nameDiv.textContent = user;
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'msg-bubble';
+            bubbleDiv.textContent = text;
+            
+            msgDiv.appendChild(nameDiv);
+            msgDiv.appendChild(bubbleDiv);
+            
+            chatLog.appendChild(msgDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function sendMessage() {
+            if(ws.readyState !== WebSocket.OPEN) return;
+            
+            const text = msgInp.value.trim();
+            const user = userInp.value.trim() || 'Anonymous';
+            
+            if(!text) return;
+
+            const payload = JSON.stringify({ user, text });
+            ws.send(payload);
+            msgInp.value = '';
+            msgInp.focus();
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        msgInp.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+
+        connect();
+    </script>
+</body>
+</html>

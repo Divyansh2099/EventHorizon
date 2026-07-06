@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHorizon Showcase Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: rgba(30, 41, 59, 0.7);
+            --surface-hover: rgba(51, 65, 85, 0.8);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.15) 0%, transparent 50%);
+        }
+
+        header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 20px var(--accent-glow);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card h2::before {
+            content: '';
+            display: block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Server Status Widget */
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: auto;
+        }
+        
+        .stat-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* User Lookup Widget */
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .json-viewer {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #a78bfa;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            min-height: 100px;
+        }
+
+        /* Chat Widget */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .message {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid var(--accent);
+            animation: slideIn 0.3s ease-out;
+            word-wrap: break-word;
+        }
+
+        .message .user {
+            font-weight: 600;
+            color: #93c5fd;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Asset Download */
+        .download-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 1rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: auto;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>EventHorizon Dashboard</h1>
+        <p>Zero-Allocation IOCP Web Framework Showcase</p>
+    </header>
+
+    <div class="dashboard">
+        
+        <!-- Server Status Widget -->
+        <div class="card">
+            <h2>Real-time Telemetry (JSON API)</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Polling <code style="color: #93c5fd;">/api/status</code> every 2s
+            </p>
+            <div class="status-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="uptimeVal">--</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="connVal">--</div>
+                    <div class="stat-label">Connections</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 1rem; color: var(--success); font-size: 0.8rem; font-weight: 600;">
+                <span id="versionVal">V --</span>
+            </div>
+        </div>
+
+        <!-- User Lookup Widget -->
+        <div class="card">
+            <h2>Radix Parameter Lookup</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                Querying <code style="color: #93c5fd;">/api/users/:id</code>
+            </p>
+            <div class="input-group">
+                <input type="text" id="userIdInput" placeholder="Enter User ID (e.g. 42)">
+                <button onclick="lookupUser()">Fetch</button>
+            </div>
+            <div class="json-viewer" id="userJsonResult">{
+  "status": "waiting"
+}</div>
+        </div>
+
+        <!-- Chat Widget -->
+        <div class="card" style="grid-column: span 1;">
+            <h2>Global WSS Broadcast Hub</h2>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatBox"></div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <input type="text" id="chatUserInput" placeholder="Name" style="flex: 0.3;" value="Guest">
+                    <input type="text" id="chatMsgInput" placeholder="Message..." onkeypress="handleChatEnter(event)">
+                    <button onclick="sendChatMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asset Download Widget -->
+        <div class="card">
+            <h2>Kernel Disk Spooling</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Test zero-allocation static file transfers via <code style="color: #93c5fd;">c.SendFile</code> on a dynamically generated 5MB payload.
+            </p>
+            <a href="/download" target="_blank" class="download-btn">
+                Download 5MB Payload
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Server Status Polling
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/api/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('uptimeVal').innerText = data.uptime;
+                    document.getElementById('connVal').innerText = data.connections;
+                    document.getElementById('versionVal').innerText = "Version: " + data.version;
+                }
+            } catch (err) {
+                console.error("Status fetch failed:", err);
+            }
+        }
+        setInterval(fetchStatus, 2000);
+        fetchStatus(); // Initial fetch
+
+        // 2. User Lookup (Radix Param)
+        async function lookupUser() {
+            const id = document.getElementById('userIdInput').value || '1';
+            const viewer = document.getElementById('userJsonResult');
+            viewer.innerText = "Loading...";
+            
+            try {
+                const res = await fetch(`/api/users/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    viewer.innerText = JSON.stringify(data, null, 2);
+                } else {
+                    viewer.innerText = `Error: HTTP ${res.status}`;
+                }
+            } catch (err) {
+                viewer.innerText = `Error: ${err.message}`;
+            }
+        }
+
+        // 3. WebSocket Chat Hub
+        const chatBox = document.getElementById('chatBox');
+        let ws;
+
+        function connectWS() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+            
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = 'message';
+                    msgDiv.innerHTML = `<span class="user">${data.user}:</span><span class="text">${data.text}</span>`;
+                    chatBox.appendChild(msgDiv);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                } catch (e) {
+                    console.error("Invalid WS message:", event.data);
+                }
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectWS, 2000); // Auto-reconnect
+            };
+        }
+        
+        function sendChatMessage() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            
+            const user = document.getElementById('chatUserInput').value || 'Anonymous';
+            const textInput = document.getElementById('chatMsgInput');
+            const text = textInput.value.trim();
+            
+            if (text) {
+                const payload = JSON.stringify({ user, text });
+                ws.send(payload);
+                textInput.value = '';
+            }
+        }
+
+        function handleChatEnter(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        // Initialize WS
+        connectWS();
+    </script>
+</body>
+</html>

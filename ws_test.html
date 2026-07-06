@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHorizon WS Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0f172a; color: #f8fafc; }
+        #log { background: #1e293b; padding: 1rem; border-radius: 8px; height: 300px; overflow-y: auto; font-family: monospace; }
+        button { background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <h2>Zero-Copy WebSocket Test</h2>
+    <div style="margin-bottom: 1rem;">
+        <button onclick="connect()">Connect</button>
+        <button onclick="send()">Send 'Hello'</button>
+        <button onclick="ws.close()">Disconnect</button>
+    </div>
+    <div id="log"></div>
+
+    <script>
+        let ws;
+        const log = document.getElementById('log');
+
+        function connect() {
+            log.innerHTML += '<div>Connecting to wss://localhost:8082/ws...</div>';
+            ws = new WebSocket('wss://localhost:8082/ws');
+            
+            ws.onopen = () => {
+                log.innerHTML += '<div style="color: #4ade80">Connected!</div>';
+            };
+            
+            ws.onmessage = (e) => {
+                log.innerHTML += `<div style="color: #60a5fa">Received: ${e.data}</div>`;
+            };
+            
+            ws.onclose = () => {
+                log.innerHTML += '<div style="color: #f87171">Disconnected.</div>';
+            };
+            
+            ws.onerror = (e) => {
+                log.innerHTML += `<div style="color: #fca5a5">Error: ${e}</div>`;
+            };
+        }
+
+        function send() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send('Hello Zero-Copy Server!');
+                log.innerHTML += '<div style="color: #94a3b8">Sent: Hello Zero-Copy Server!</div>';
+            }
+        }
+    </script>
+</body>
+</html>
