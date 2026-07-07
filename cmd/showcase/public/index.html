@@ -1,327 +1,337 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventHorizon Showcase Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>EventHorizon Portfolio & Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        },
+                        dark: {
+                            bg: '#0f172a',
+                            surface: 'rgba(30, 41, 59, 0.7)',
+                            surfaceHover: 'rgba(51, 65, 85, 0.8)',
+                            border: 'rgba(255, 255, 255, 0.1)',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --bg: #0f172a;
-            --surface: rgba(30, 41, 59, 0.7);
-            --surface-hover: rgba(51, 65, 85, 0.8);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.5);
-            --success: #10b981;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background-color: #0f172a;
+            color: #f8fafc;
             background-image: 
                 radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
                 radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.15) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
-        header {
-            padding: 2rem;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-            background: rgba(15, 23, 42, 0.8);
+        .glass-card {
+            background: var(--tw-colors-dark-surface);
             backdrop-filter: blur(12px);
+            border: 1px solid var(--tw-colors-dark-border);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
         }
-
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(to right, #60a5fa, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-        }
-
-        header p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 20px var(--accent-glow);
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.15);
             border-color: rgba(255, 255, 255, 0.2);
         }
 
-        .card h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .card h2::before {
-            content: '';
-            display: block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        /* Server Status Widget */
-        .status-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: auto;
-        }
-        
-        .stat-box {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-        
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* User Lookup Widget */
-        .input-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        input {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            color: var(--text-primary);
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input:focus {
-            border-color: var(--accent);
-        }
-
-        button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        button:hover {
-            background: #2563eb;
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
-        .json-viewer {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: monospace;
-            font-size: 0.9rem;
-            color: #a78bfa;
-            white-space: pre-wrap;
-            overflow-x: auto;
-            min-height: 100px;
-        }
-
-        /* Chat Widget */
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 300px;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 1rem;
-            overflow-y: auto;
-            margin-bottom: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .message {
-            padding: 0.5rem 0.75rem;
-            border-radius: 8px;
-            background: rgba(59, 130, 246, 0.1);
-            border-left: 3px solid var(--accent);
+        .chat-message {
             animation: slideIn 0.3s ease-out;
-            word-wrap: break-word;
         }
-
-        .message .user {
-            font-weight: 600;
-            color: #93c5fd;
-            margin-right: 0.5rem;
-        }
-
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(-10px); }
             to { opacity: 1; transform: translateX(0); }
         }
-
-        /* Asset Download */
-        .download-btn {
-            display: block;
-            width: 100%;
-            text-align: center;
-            text-decoration: none;
-            background: linear-gradient(135deg, #10b981, #059669);
-            padding: 1rem;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: auto;
-        }
-
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-        }
     </style>
 </head>
-<body>
+<body class="antialiased selection:bg-brand-500 selection:text-white">
 
-    <header>
-        <h1>EventHorizon Dashboard</h1>
-        <p>Zero-Allocation IOCP Web Framework Showcase</p>
-    </header>
-
-    <div class="dashboard">
-        
-        <!-- Server Status Widget -->
-        <div class="card">
-            <h2>Real-time Telemetry (JSON API)</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
-                Polling <code style="color: #93c5fd;">/api/status</code> every 2s
-            </p>
-            <div class="status-grid">
-                <div class="stat-box">
-                    <div class="stat-value" id="uptimeVal">--</div>
-                    <div class="stat-label">Uptime</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="connVal">--</div>
-                    <div class="stat-label">Connections</div>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 1rem; color: var(--success); font-size: 0.8rem; font-weight: 600;">
-                <span id="versionVal">V --</span>
+    <!-- Sticky Navbar -->
+    <nav class="fixed top-0 w-full z-50 bg-slate-900/80 backdrop-blur-md border-b border-white/10 transition-all">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="#" class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-2">
+                <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                EventHorizon
+            </a>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-300">
+                <a href="#intro" class="hover:text-white transition-colors">Intro</a>
+                <a href="#dashboard" class="hover:text-white transition-colors">Live Dashboard</a>
+                <a href="#benchmarks" class="hover:text-white transition-colors">Benchmarks</a>
+                <a href="https://github.com/Divyansh2099/EventHorizon" target="_blank" class="hover:text-white transition-colors flex items-center gap-2">
+                    GitHub
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                </a>
             </div>
         </div>
+    </nav>
 
-        <!-- User Lookup Widget -->
-        <div class="card">
-            <h2>Radix Parameter Lookup</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
-                Querying <code style="color: #93c5fd;">/api/users/:id</code>
-            </p>
-            <div class="input-group">
-                <input type="text" id="userIdInput" placeholder="Enter User ID (e.g. 42)">
-                <button onclick="lookupUser()">Fetch</button>
+    <!-- Intro / Hero Section -->
+    <section id="intro" class="min-h-screen flex items-center justify-center pt-20 px-6 relative overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse-slow"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 2s;"></div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto text-center z-10 animate-float">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-white/10 text-sm font-medium text-blue-300 mb-8">
+                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                v1.0 is now live on GitHub
             </div>
-            <div class="json-viewer" id="userJsonResult">{
+            
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+                Zero-Allocation <br>
+                <span class="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">Hardware Speed</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+                EventHorizon is a revolutionary Go web framework that bypasses the standard library and binds directly to the Windows IOCP/RIO kernel memory plane. It delivers C++ level performance with zero heap allocations per request.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#dashboard" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)]">
+                    Explore Live Dashboard
+                </a>
+                <a href="#benchmarks" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 text-white font-semibold transition-all">
+                    View Benchmark Data
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="py-24 px-6 border-t border-white/5 bg-slate-900/30">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-12 text-center">
+                <h2 class="text-3xl font-bold mb-4">Live Framework Showcase</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">This section demonstrates EventHorizon actively serving dynamic JSON endpoints, maintaining WebSocket hubs, mapping Radix Tree parameters, and streaming files via zero-allocation hardware chunking—all multiplexed concurrently.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                
+                <!-- Telemetry Card -->
+                <div class="glass-card p-6 flex flex-col">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
+                        <h3 class="text-xl font-semibold">Real-time Telemetry</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm mb-6 font-mono">GET /api/status</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-auto">
+                        <div class="bg-black/30 rounded-xl p-4 border border-white/5 text-center">
+                            <div class="text-3xl font-bold text-white mb-1" id="uptimeVal">--</div>
+                            <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Uptime</div>
+                        </div>
+                        <div class="bg-black/30 rounded-xl p-4 border border-white/5 text-center">
+                            <div class="text-3xl font-bold text-white mb-1" id="connVal">--</div>
+                            <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Active Conns</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20" id="versionVal">V --</span>
+                    </div>
+                </div>
+
+                <!-- Radix Lookup Card -->
+                <div class="glass-card p-6 flex flex-col">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-3 h-3 rounded-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]"></div>
+                        <h3 class="text-xl font-semibold">Radix Parameter Lookup</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm mb-6 font-mono">GET /api/users/:id</p>
+                    
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="userIdInput" placeholder="Enter User ID (e.g. 42)" class="flex-1 bg-black/30 border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-purple-500 transition-colors">
+                        <button onclick="lookupUser()" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold px-6 py-2 rounded-lg transition-colors">Fetch</button>
+                    </div>
+                    
+                    <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-purple-300 border border-white/5 overflow-x-auto min-h-[120px]" id="userJsonResult">{
   "status": "waiting"
 }</div>
-        </div>
-
-        <!-- Chat Widget -->
-        <div class="card" style="grid-column: span 1;">
-            <h2>Global WSS Broadcast Hub</h2>
-            <div class="chat-container">
-                <div class="chat-messages" id="chatBox"></div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <input type="text" id="chatUserInput" placeholder="Name" style="flex: 0.3;" value="Guest">
-                    <input type="text" id="chatMsgInput" placeholder="Message..." onkeypress="handleChatEnter(event)">
-                    <button onclick="sendChatMessage()">Send</button>
                 </div>
+
+                <!-- Chat Card -->
+                <div class="glass-card p-6 flex flex-col md:col-span-2 lg:col-span-1 h-[450px]">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                        <h3 class="text-xl font-semibold">Global WSS Hub</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm mb-4 font-mono">WSS /ws</p>
+                    
+                    <div class="flex-1 bg-black/30 border border-white/5 rounded-lg p-4 mb-4 overflow-y-auto flex flex-col gap-2" id="chatBox">
+                        <!-- Messages go here -->
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <input type="text" id="chatUserInput" value="Guest" class="w-1/4 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-green-500 transition-colors">
+                        <input type="text" id="chatMsgInput" placeholder="Message..." onkeypress="handleChatEnter(event)" class="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-green-500 transition-colors">
+                        <button onclick="sendChatMessage()" class="bg-green-600 hover:bg-green-500 text-white font-semibold px-4 py-2 rounded-lg transition-colors">Send</button>
+                    </div>
+                </div>
+
+                <!-- File Download Card -->
+                <div class="glass-card p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-3 h-3 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]"></div>
+                            <h3 class="text-xl font-semibold">Kernel Disk Spooling</h3>
+                        </div>
+                        <p class="text-slate-400 text-sm mb-6 font-mono">GET /download</p>
+                        <p class="text-slate-300 leading-relaxed">
+                            Test zero-allocation static file transfers. EventHorizon uses <code>c.SendFile</code> to bypass user-space buffering, mapping the file directly into the kernel's transmit pipeline.
+                        </p>
+                    </div>
+                    
+                    <a href="/download" target="_blank" class="w-full block text-center mt-8 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white font-bold py-4 rounded-xl transition-all shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.5)]">
+                        Download 5MB Payload
+                    </a>
+                </div>
+
             </div>
         </div>
+    </section>
 
-        <!-- Asset Download Widget -->
-        <div class="card">
-            <h2>Kernel Disk Spooling</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
-                Test zero-allocation static file transfers via <code style="color: #93c5fd;">c.SendFile</code> on a dynamically generated 5MB payload.
-            </p>
-            <a href="/download" target="_blank" class="download-btn">
-                Download 5MB Payload
-            </a>
+    <!-- Benchmarks Section -->
+    <section id="benchmarks" class="py-24 px-6 border-t border-white/5">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">The Standard Library Showdown</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto text-lg">An apples-to-apples performance comparison between the hardware-accelerated EventHorizon API and the highly optimized Go <code>net/http</code> standard library.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                
+                <!-- Performance Table -->
+                <div class="glass-card overflow-hidden">
+                    <div class="bg-slate-800/50 p-6 border-b border-white/5">
+                        <h3 class="text-xl font-bold flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Throughput & Latency (30s Load Test)
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-black/20 text-slate-400 text-sm uppercase tracking-wider">
+                                    <th class="p-4 border-b border-white/5 font-semibold">Metric</th>
+                                    <th class="p-4 border-b border-white/5 font-semibold text-blue-400">EventHorizon</th>
+                                    <th class="p-4 border-b border-white/5 font-semibold">Go net/http</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr class="hover:bg-white/[0.02] transition-colors">
+                                    <td class="p-4 text-slate-300 font-medium">Average RPS</td>
+                                    <td class="p-4 font-bold text-white text-lg">84,859.55</td>
+                                    <td class="p-4 text-slate-400">58,539.26</td>
+                                </tr>
+                                <tr class="hover:bg-white/[0.02] transition-colors">
+                                    <td class="p-4 text-slate-300 font-medium">Peak RPS (Burst)</td>
+                                    <td class="p-4 font-bold text-white text-lg">119,841.87</td>
+                                    <td class="p-4 text-slate-400">90,811.46</td>
+                                </tr>
+                                <tr class="hover:bg-white/[0.02] transition-colors">
+                                    <td class="p-4 text-slate-300 font-medium">Average Latency</td>
+                                    <td class="p-4 font-bold text-white text-lg">5.87ms</td>
+                                    <td class="p-4 text-slate-400">8.52ms</td>
+                                </tr>
+                                <tr class="hover:bg-white/[0.02] transition-colors">
+                                    <td class="p-4 text-slate-300 font-medium">Total 2xx Requests</td>
+                                    <td class="p-4 font-bold text-white text-lg">2,543,249</td>
+                                    <td class="p-4 text-slate-400">1,747,361</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Context/Memory Details -->
+                <div class="flex flex-col gap-6">
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            Memory Architecture
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="bg-black/20 p-4 rounded-lg border border-white/5">
+                                <div class="text-sm text-slate-400 mb-1">Go net/http (Dynamic / GC-Swept)</div>
+                                <div class="text-lg text-white font-medium">52.87 MB <span class="text-xs text-slate-500 font-normal">Active Working Set</span></div>
+                            </div>
+                            <div class="bg-blue-500/10 p-4 rounded-lg border border-blue-500/20">
+                                <div class="text-sm text-blue-300 mb-1">EventHorizon (Static / Pre-allocated)</div>
+                                <div class="text-lg text-white font-medium">506.59 MB <span class="text-xs text-blue-400/50 font-normal">Kernel Plane</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 border-l-4 border-l-blue-500">
+                        <h4 class="font-bold text-white mb-2">Why does EventHorizon use 500MB?</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                            At first glance, it appears EventHorizon consumes 10x more memory than <code>net/http</code>. However, this is precisely the secret to its blistering speed.
+                        </p>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            The standard library dynamically allocates objects per request, rapidly cycling 53MB through the Garbage Collector to stay alive. EventHorizon immediately claims ~500MB to pre-allocate an immovable physical ring of 50,000 Connection Contexts bound strictly to the Network Interface Card (NIC) via Windows RIO.
+                        </p>
+                        <p class="text-slate-300 text-sm leading-relaxed mt-4 font-semibold text-blue-400">
+                            During the 84,000+ RPS barrage, EventHorizon's memory did not grow by a single byte, achieving 45% higher throughput by completely bypassing the Go heap!
+                        </p>
+                    </div>
+                </div>
+
+            </div>
         </div>
+    </section>
 
-    </div>
+    <footer class="py-8 border-t border-white/5 text-center text-slate-500 text-sm">
+        <p>Built with Go, Windows RIO, and Tailwind CSS. Hosted natively by EventHorizon.</p>
+    </footer>
 
+    <!-- Logic -->
     <script>
         // 1. Server Status Polling
         async function fetchStatus() {
@@ -331,7 +341,7 @@
                     const data = await res.json();
                     document.getElementById('uptimeVal').innerText = data.uptime;
                     document.getElementById('connVal').innerText = data.connections;
-                    document.getElementById('versionVal').innerText = "Version: " + data.version;
+                    document.getElementById('versionVal').innerText = "Version " + data.version;
                 }
             } catch (err) {
                 console.error("Status fetch failed:", err);
@@ -371,8 +381,8 @@
                 try {
                     const data = JSON.parse(event.data);
                     const msgDiv = document.createElement('div');
-                    msgDiv.className = 'message';
-                    msgDiv.innerHTML = `<span class="user">${data.user}:</span><span class="text">${data.text}</span>`;
+                    msgDiv.className = 'chat-message bg-green-500/10 border-l-2 border-green-500 rounded px-3 py-2 text-sm';
+                    msgDiv.innerHTML = `<span class="font-bold text-green-400 mr-2">${data.user}:</span><span class="text-slate-200">${data.text}</span>`;
                     chatBox.appendChild(msgDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 } catch (e) {
@@ -407,6 +417,18 @@
 
         // Initialize WS
         connectWS();
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-lg');
+                nav.classList.replace('bg-slate-900/80', 'bg-slate-900/95');
+            } else {
+                nav.classList.remove('shadow-lg');
+                nav.classList.replace('bg-slate-900/95', 'bg-slate-900/80');
+            }
+        });
     </script>
 </body>
 </html>
