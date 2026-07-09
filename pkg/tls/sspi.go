@@ -302,11 +302,6 @@ func ProcessHandshake(tlsCtxt *SecHandle, inBytes []byte) ([]byte, uint32, uint3
 		pCtxtIn = uintptr(unsafe.Pointer(tlsCtxt))
 	}
 
-	// DUMP inBytes to see if it is a valid ClientHello
-	if pCtxtIn == 0 {
-		os.WriteFile("client_hello.bin", inBytes, 0644)
-	}
-
 	ret, _, _ := syscall.SyscallN(
 		procAcceptSecurityContext.Addr(),
 		uintptr(unsafe.Pointer(&ServerCredHandle)),
