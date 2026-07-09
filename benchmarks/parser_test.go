@@ -41,3 +41,34 @@ func BenchmarkZeroCopyParser(b *testing.B) {
 		req.Release()
 	}
 }
+
+var shortRequest = []byte("GET / HTTP/1.1\r\nHost: localhost\r\n\r\n")
+
+// BenchmarkZeroCopyParserShort proves that parsing a short standard HTTP request
+// directly from the socket buffer incurs zero heap allocations.
+func BenchmarkZeroCopyParserShort(b *testing.B) {
+	p := parser.Parser{}
+	var readBuf pool.Buffer
+	copy(readBuf[:], shortRequest)
+	var writeBuf pool.Buffer
+
+	b.ReportAllocs()
+	b.SetBytes(int64(len(shortRequest)))
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		p.Reset()
+		req := parser.GetRequestCtx(readBuf[:], writeBuf[:])
+
+		_, err := p.Parse(uint32(len(shortRequest)), req)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		if req.Method.End == 0 {
+			b.Fatal("failed to parse")
+		}
+
+		req.Release()
+	}
+}

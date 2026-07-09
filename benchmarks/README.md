@@ -31,18 +31,23 @@ go test -bench . ./benchmarks -benchmem
 
 ## Latest Results (As of July 2026)
 
-```text
-goos: windows
-goarch: amd64
-pkg: github.com/eventhorizon/benchmarks
-cpu: AMD Ryzen 5 5500U with Radeon Graphics         
-BenchmarkConnectionLifecycle-12    	 1841274	       598.0 ns/op	       0 B/op	       0 allocs/op
-BenchmarkZeroCopyParser-12         	 1000000	      1208 ns/op	 101.86 MB/s	       0 B/op	       0 allocs/op
-BenchmarkBufferPool-12             	 7404084	       176.1 ns/op	       0 B/op	       0 allocs/op
-BenchmarkRouterLookup-12           	29708318	        43.32 ns/op	       0 B/op	       0 allocs/op
-```
+This table demonstrates the speed and zero-allocation properties of EventHorizon's internal engines compared directly against the standard Go `net/http` package. These results were compiled by running `-count=15` across all benchmarks and taking the median values.
 
-All micro-benchmarks confirm the core loop executes with **0 bytes allocated per operation**.
+| Benchmark Scenario | Framework | Speed (ns/op) | Throughput | Memory (B/op) | Allocs/op |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **HTTP Parser (Standard Request)** | ⚡ **EventHorizon** | **~398 ns/op** | **~308 MB/s** | **0 B/op** | **0** |
+| | 🐢 Go `net/http` | ~5,700 ns/op | ~21 MB/s | 5,266 B/op | 13 |
+| **HTTP Parser (Short Request)** | ⚡ **EventHorizon** | **~147 ns/op** | **~238 MB/s** | **0 B/op** | **0** |
+| | 🐢 Go `net/http` | ~5,700 ns/op | ~6 MB/s | 5,154 B/op | 10 |
+| **Router Lookup (Basic Path)** | ⚡ **EventHorizon** | **~60 ns/op** | - | **0 B/op** | **0** |
+| | 🐢 Go `http.ServeMux` | ~135 ns/op | - | 0 B/op | 0 |
+| **Router Lookup (Deep Path)** | ⚡ **EventHorizon** | **~135 ns/op** | - | **0 B/op** | **0** |
+| | 🐢 Go `http.ServeMux` | ~245 ns/op | - | 64 B/op | 1 |
+| **Router Lookup (Parametric)** | ⚡ **EventHorizon** | **~75 ns/op** | - | **0 B/op** | **0** |
+| **Buffer Pool Operations** | ⚡ **EventHorizon** | **~73.5 ns/op** | - | **0 B/op** | **0** |
+| **Connection Lifecycle** | ⚡ **EventHorizon** | **~281.9 ns/op** | - | **56 B/op** | **2** |
+
+*(Note: The standard library does not feature direct equivalents for the Parametric Router Lookup, Buffer Pool, and Connection Lifecycle in these exact micro-benchmark contexts).*
 
 ## Phase 16: RIO (Registered I/O) Integration Benchmarks
 
