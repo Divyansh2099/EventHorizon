@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="./cmd/showcase/public/icons.svg" width="120" height="120" alt="EventHorizon Logo"/>
   <h1>EventHorizon Framework</h1>
   <p><strong>A Zero-Allocation, Hardware-Accelerated Web Framework for Go on Windows.</strong></p>
 </div>
