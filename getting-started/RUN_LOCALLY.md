@@ -43,3 +43,20 @@ Open your favorite web browser and navigate to the live dashboard:
 👉 **https://127.0.0.1:8082**
 
 *Note: Because you are using a self-signed development certificate, your browser will show a "Your connection is not private" or "Potential Security Risk" warning. This is completely normal for local development. Simply click **Advanced** -> **Proceed to 127.0.0.1** to view the site.*
+
+---
+
+## Troubleshooting
+
+### Error: `AcceptSecurityContext failed with status 0x80090327`
+If the server boots successfully and says `Found certificate with private key!`, but the moment you try to connect via your browser you see a flood of `AcceptSecurityContext failed` errors in the server console, it means your Windows store has **multiple conflicting `127.0.0.1` certificates**.
+
+EventHorizon will grab the first one it finds, and if it's an old certificate with an inaccessible private key (which often happens after a system restart), the TLS handshake will fail.
+
+**The Fix:**
+Open PowerShell as Administrator and run this command to delete all old conflicting certificates and generate a single fresh one:
+```powershell
+Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Subject -match '127.0.0.1' } | Remove-Item -Force
+New-SelfSignedCertificate -DnsName '127.0.0.1' -CertStoreLocation 'Cert:\CurrentUser\My' -Provider 'Microsoft RSA SChannel Cryptographic Provider' -KeySpec KeyExchange -KeyAlgorithm RSA -KeyLength 2048
+```
+Then, restart the server.
