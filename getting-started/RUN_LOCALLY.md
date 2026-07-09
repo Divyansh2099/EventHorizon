@@ -59,4 +59,10 @@ Open PowerShell as Administrator and run this command to delete all old conflict
 Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Subject -match '127.0.0.1' } | Remove-Item -Force
 New-SelfSignedCertificate -DnsName '127.0.0.1' -CertStoreLocation 'Cert:\CurrentUser\My' -Provider 'Microsoft RSA SChannel Cryptographic Provider' -KeySpec KeyExchange -KeyAlgorithm RSA -KeyLength 2048
 ```
-Then, restart the server.
+### Error: No "Proceed" Button in Chrome
+If you open Chrome and get the "Your connection is not private" warning, but there is no **Advanced -> Proceed** button available, Chrome is strictly blocking the self-signed certificate.
+
+**The Fix (Chrome Secret):**
+1. Click anywhere on the white space of the error page to ensure the window has focus.
+2. Literally type the word `thisisunsafe` on your keyboard. (There is no text box, just type it blindly).
+3. Chrome will instantly bypass the security warning and load the page!
