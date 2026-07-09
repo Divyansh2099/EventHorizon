@@ -1,0 +1,48 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+*.test.exe
+
+# Output of the go coverage tool
+*.out
+*.prof
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+_testmain.go
+*.cgo1.go
+*.cgo2.c
+
+# Local workspace files
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Build artifacts
+bin/
+build/
+obj/
+
+# Logs and temp files
+*.log
+*.tmp
+debug_log*.txt
+
+# Certificates
+*.pfx
+*.pem
+*.key
+*.crt
+
+# Go workspace file
+go.work
+go.work.sum
