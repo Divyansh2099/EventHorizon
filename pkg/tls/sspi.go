@@ -3,7 +3,6 @@ package tls
 import (
 	"crypto/x509"
 	"fmt"
-	"os"
 	"syscall"
 	"unsafe"
 
