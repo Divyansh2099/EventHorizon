@@ -15,16 +15,12 @@ var (
 
 	procAcquireCredentialsHandleW   = secur32.NewProc("AcquireCredentialsHandleW")
 	procAcceptSecurityContext       = secur32.NewProc("AcceptSecurityContext")
-	procFreeCredentialsHandle       = secur32.NewProc("FreeCredentialsHandle")
 	procDeleteSecurityContext       = secur32.NewProc("DeleteSecurityContext")
 	procEncryptMessage              = secur32.NewProc("EncryptMessage")
 	procDecryptMessage              = secur32.NewProc("DecryptMessage")
 	procQueryContextAttributesW     = secur32.NewProc("QueryContextAttributesW")
 
-	procPFXImportCertStore          = crypt32.NewProc("PFXImportCertStore")
 	procCertEnumCertificatesInStore = crypt32.NewProc("CertEnumCertificatesInStore")
-	procCertFreeCertificateContext  = crypt32.NewProc("CertFreeCertificateContext")
-	procCertCloseStore              = crypt32.NewProc("CertCloseStore")
 )
 
 const (
@@ -74,7 +70,7 @@ func (s *SecHandle) IsValid() bool {
 type SecBuffer struct {
 	cbBuffer   uint32
 	BufferType uint32
-	pvBuffer   uintptr
+	pvBuffer   *byte
 }
 
 type SecBufferDesc struct {
@@ -135,7 +131,7 @@ func init() {
 	unifiedProvider, _ = syscall.UTF16PtrFromString("Schannel")
 }
 
-var GlobalCertContext uintptr
+var GlobalCertContext unsafe.Pointer
 
 func InitSchannel(pfxPath, password string) error {
 	storeName, _ := syscall.UTF16PtrFromString("MY")
@@ -145,13 +141,14 @@ func InitSchannel(pfxPath, password string) error {
 	}
 
 	for {
-		GlobalCertContext, _, _ = syscall.SyscallN(procCertEnumCertificatesInStore.Addr(), hStore, GlobalCertContext)
-		if GlobalCertContext == 0 {
+		retEnum, _, _ := syscall.SyscallN(procCertEnumCertificatesInStore.Addr(), hStore, uintptr(GlobalCertContext))
+		GlobalCertContext = unsafe.Pointer(retEnum)
+		if GlobalCertContext == nil {
 			break
 		}
 		
 		var pcbData uint32
-		retGetProp, _, _ := syscall.SyscallN(crypt32.NewProc("CertGetCertificateContextProperty").Addr(), GlobalCertContext, 2 /*CERT_KEY_PROV_INFO_PROP_ID*/, 0, uintptr(unsafe.Pointer(&pcbData)))
+		retGetProp, _, _ := syscall.SyscallN(crypt32.NewProc("CertGetCertificateContextProperty").Addr(), uintptr(GlobalCertContext), 2 /*CERT_KEY_PROV_INFO_PROP_ID*/, 0, uintptr(unsafe.Pointer(&pcbData)))
 		if retGetProp != 0 {
 			// Read the pbCertEncoded to parse with x509
 			certCtx := (*struct{
@@ -160,7 +157,7 @@ func InitSchannel(pfxPath, password string) error {
 				CbCertEncoded      uint32
 				PCertInfo          uintptr
 				HCertStore         uintptr
-			})(unsafe.Pointer(GlobalCertContext))
+			})(GlobalCertContext)
 			
 			certBytes := unsafe.Slice(certCtx.PbCertEncoded, certCtx.CbCertEncoded)
 			if parsedCert, err := x509.ParseCertificate(certBytes); err == nil {
@@ -172,9 +169,11 @@ func InitSchannel(pfxPath, password string) error {
 		}
 	}
 
-	if GlobalCertContext == 0 {
+	if GlobalCertContext == nil {
 		return fmt.Errorf("Could not find a valid certificate with a private key")
 	}
+
+	certContextPtr := uintptr(GlobalCertContext)
 
 	creds := struct {
 		DwVersion               uint32
@@ -194,7 +193,7 @@ func InitSchannel(pfxPath, password string) error {
 	}{
 		DwVersion:             0x00000004, // SCHANNEL_CRED_VERSION
 		CCreds:                1,
-		PaCred:                &GlobalCertContext,
+		PaCred:                &certContextPtr,
 		GrbitEnabledProtocols: 0,
 		DwFlags:               0,
 	}
@@ -236,7 +235,7 @@ func ProcessHandshake(tlsCtxt *SecHandle, inBytes []byte) ([]byte, uint32, uint3
 		inBuffers = append(inBuffers, SecBuffer{
 			cbBuffer:   uint32(len(inBytes)),
 			BufferType: SECBUFFER_TOKEN,
-			pvBuffer:   uintptr(unsafe.Pointer(&inBytes[0])),
+			pvBuffer:   &inBytes[0],
 		})
 	}
 	// Add ALPN to input buffers
@@ -251,7 +250,7 @@ func ProcessHandshake(tlsCtxt *SecHandle, inBytes []byte) ([]byte, uint32, uint3
 	inBuffers = append(inBuffers, SecBuffer{
 		cbBuffer:   0,
 		BufferType: SECBUFFER_EMPTY,
-		pvBuffer:   0,
+		pvBuffer:   nil,
 	})
 
 	inDesc := SecBufferDesc{
@@ -266,17 +265,17 @@ func ProcessHandshake(tlsCtxt *SecHandle, inBytes []byte) ([]byte, uint32, uint3
 		{
 			cbBuffer:   0,
 			BufferType: SECBUFFER_TOKEN,
-			pvBuffer:   0,
+			pvBuffer:   nil,
 		},
 		{
 			cbBuffer:   0,
 			BufferType: SECBUFFER_ALERT,
-			pvBuffer:   0,
+			pvBuffer:   nil,
 		},
 		{
 			cbBuffer:   0,
 			BufferType: SECBUFFER_EMPTY,
-			pvBuffer:   0,
+			pvBuffer:   nil,
 		},
 	}
 	outDesc := SecBufferDesc{
@@ -322,13 +321,13 @@ func ProcessHandshake(tlsCtxt *SecHandle, inBytes []byte) ([]byte, uint32, uint3
 	
 	if status == 0 || status == 0x00090312 { // SEC_E_OK or SEC_I_CONTINUE_NEEDED
 		var outBytesReturned []byte
-		if outBuffers[0].cbBuffer > 0 && outBuffers[0].pvBuffer != 0 {
+		if outBuffers[0].cbBuffer > 0 && outBuffers[0].pvBuffer != nil {
 			// Read from the allocated memory
-			allocatedBytes := unsafe.Slice((*byte)(unsafe.Pointer(outBuffers[0].pvBuffer)), outBuffers[0].cbBuffer)
+			allocatedBytes := unsafe.Slice(outBuffers[0].pvBuffer, outBuffers[0].cbBuffer)
 			outBytesReturned = make([]byte, len(allocatedBytes))
 			copy(outBytesReturned, allocatedBytes)
 			// Free the context buffer
-			syscall.SyscallN(secur32.NewProc("FreeContextBuffer").Addr(), outBuffers[0].pvBuffer)
+			syscall.SyscallN(secur32.NewProc("FreeContextBuffer").Addr(), uintptr(unsafe.Pointer(outBuffers[0].pvBuffer)))
 		} else {
 			outBytesReturned = outTokenBuf[:outBuffers[0].cbBuffer]
 		}
@@ -355,7 +354,7 @@ func Decrypt(tlsCtxt *SecHandle, ioBuf []byte) (uint32, uint32, error) {
 		{
 			cbBuffer:   uint32(len(ioBuf)),
 			BufferType: SECBUFFER_DATA,
-			pvBuffer:   uintptr(unsafe.Pointer(&ioBuf[0])),
+			pvBuffer:   &ioBuf[0],
 		},
 		{BufferType: SECBUFFER_EMPTY},
 		{BufferType: SECBUFFER_EMPTY},
@@ -387,9 +386,10 @@ func Decrypt(tlsCtxt *SecHandle, ioBuf []byte) (uint32, uint32, error) {
 	var extraLen uint32
 
 	for i := 0; i < 4; i++ {
-		if buffers[i].BufferType == SECBUFFER_DATA {
+		switch buffers[i].BufferType {
+		case SECBUFFER_DATA:
 			decryptedLen = buffers[i].cbBuffer
-		} else if buffers[i].BufferType == SECBUFFER_EXTRA {
+		case SECBUFFER_EXTRA:
 			extraLen = buffers[i].cbBuffer
 		}
 	}
@@ -406,17 +406,17 @@ func Encrypt(tlsCtxt *SecHandle, sizes SecPkgContext_StreamSizes, writeBuf []byt
 		{
 			cbBuffer:   sizes.CbHeader,
 			BufferType: SECBUFFER_STREAM_HEADER,
-			pvBuffer:   uintptr(unsafe.Pointer(&writeBuf[0])),
+			pvBuffer:   &writeBuf[0],
 		},
 		{
 			cbBuffer:   plainLen,
 			BufferType: SECBUFFER_DATA,
-			pvBuffer:   uintptr(unsafe.Pointer(&writeBuf[sizes.CbHeader])),
+			pvBuffer:   &writeBuf[sizes.CbHeader],
 		},
 		{
 			cbBuffer:   sizes.CbTrailer,
 			BufferType: SECBUFFER_STREAM_TRAILER,
-			pvBuffer:   uintptr(unsafe.Pointer(&writeBuf[sizes.CbHeader+plainLen])),
+			pvBuffer:   &writeBuf[sizes.CbHeader+plainLen],
 		},
 		{
 			BufferType: SECBUFFER_EMPTY,
