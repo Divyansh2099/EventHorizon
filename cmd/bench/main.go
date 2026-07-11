@@ -78,7 +78,7 @@ var workloads = []Workload{
 }
 
 var markdownTemplate = `
-# Antigravity Workload Benchmarks
+# EventHorizon Workload Benchmarks
 
 **Target Server:** 127.0.0.1:8082
 **Load Generator:** bombardier

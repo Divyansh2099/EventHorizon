@@ -1,6 +1,6 @@
-# Antigravity Server: Development Plan & Progress
+# EventHorizon Server: Development Plan & Progress
 
-This document tracks the progress of the Antigravity high-performance zero-allocation Windows server against the official 7-phase master plan.
+This document tracks the progress of the EventHorizon high-performance zero-allocation Windows server against the official 7-phase master plan.
 
 ## Overview of Progress
 
